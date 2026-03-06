@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+
+<html data-theme="light" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>C&amp;CH - PANEL GENERAL v152_BACK_FIXED</title>
+<link href="logo.png" rel="icon" type="image/png"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<link href="./styles.css?v=146r" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- XLSX (SheetJS) para leer pedidos .xlsx en Analítica -->
+<!-- XLSX (SheetJS) with fallback CDN (Hostinger/CSP sometimes blocks jsDelivr) -->
+<script>
+      (function(){
+        function inject(src){
+          var s=document.createElement('script');
+          s.src=src; s.defer=true;
+          document.head.appendChild(s);
+        }
+        // Prefer jsDelivr, fallback to cdnjs
+        var primary=document.createElement('script');
+        primary.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+        primary.defer=true;
+        primary.onerror=function(){
+          inject('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+        };
+        document.head.appendChild(primary);
+      })();
+    </script>
+</head>
+<body>
+<div class="layout-side-nav" id="app-container">
+<header id="main-header">
+<div class="logo-area">
+<img alt="C&amp;CH" id="app-logo" onerror="this.src='https://via.placeholder.com/40x40?text=Logo'" src="logo.png"/>
+<div class="brand-text"><h1>PANEL GENERAL</h1><span>v152_BACK_FIXED · SOLIDA · Español Nativo</span></div>
+</div>
+<nav id="main-nav">
+<button class="nav-btn active" data-view="dashboard">Inicio</button>
+<button class="nav-btn" data-view="analytics"><i class="fa-solid fa-chart-pie"></i> Analítica</button>
+<button class="nav-btn" data-view="objetivos"><i class="fa-solid fa-bullseye"></i> Objetivos</button>
+<button class="nav-btn" data-view="facturacion"><i class="fa-solid fa-file-invoice-dollar"></i> Facturación</button>
+<button class="nav-btn" data-view="produccion"><i class="fa-solid fa-industry"></i> Producción</button>
+<button class="nav-btn" data-view="informes"><i class="fa-solid fa-file-export"></i> Informes</button>
+<span class="nav-divider"></span>
+<button class="nav-btn" data-view="rfqs">Lista RFQs</button>
+<button class="nav-btn" data-view="offers">Lista Ofertas</button>
+<button class="nav-btn" data-view="orders">Lista Pedidos</button>
+<a class="nav-btn nav-link" href="https://caramelos-chocolates.com/panel/" rel="noopener" target="_blank">PANEL DIARIO</a>
+</nav>
+<div class="header-controls">
+  <!-- Iconos compactos: Ventana (layout) + Día/Noche + Ajustes (arriba) -->
+  <div class="header-icons">
+    <button class="control-btn" id="btn-layout" title="Ventana / Menú"><i class="fa-regular fa-window-restore"></i></button>
+    <button class="control-btn" id="btn-theme" title="Modo Día/Noche"><i class="fa-solid fa-moon"></i></button>
+    <div class="settings-wrap">
+      <button class="control-btn" id="btn-settings" title="Ajustes"><i class="fa-solid fa-gear"></i></button>
+      <div class="settings-menu hidden" id="settings-menu">
+<button class="menu-item" id="menu-switch-user"><i class="fa-solid fa-user"></i> Cambiar usuario</button>
+<div class="menu-sep"></div>
+<button class="menu-item" id="menu-export-json"><i class="fa-solid fa-download"></i> Exportar panelgeneral.json</button>
+<button class="menu-item" id="menu-import-json"><i class="fa-solid fa-upload"></i> Importar panelgeneral.json</button>
+<button class="menu-item" id="menu-export-server"><i class="fa-solid fa-cloud-arrow-down"></i> Backup servidor (database_general.json)</button>
+<button class="menu-item" id="menu-import-server"><i class="fa-solid fa-cloud-arrow-up"></i> Restaurar servidor (subir JSON)</button>
+<input accept="application/json" id="restore-file" style="display:none" type="file"/>
+<div class="menu-sep"></div>
+<button class="menu-item danger" id="menu-reset"><i class="fa-solid fa-trash"></i> Reset local</button>
+</div>
+    </div>
+  </div>
+  <!-- Estado (abajo / otra línea) -->
+  <div class="header-status">
+    <div class="autosave-status" id="autosave-status" title="Guardado local en el navegador">⟳ listo</div>
+    <div class="autosave-status" id="server-status" title="Estado de sincronización con servidor">Servidor: …</div>
+  </div>
+</div>
+</header>
+<!-- Login modal (roles) -->
+<div class="modal hidden" id="login-modal">
+<div class="modal-card">
+<div class="modal-title">Acceso</div>
+<div class="modal-sub">Selecciona tu usuario para cargar tus permisos.</div>
+<div class="modal-row">
+<label>Usuario</label>
+<select id="login-user">
+<option value="Alejandro">Alejandro (Admin)</option>
+<option value="David">David (Producción)</option>
+<option value="Veronica">Verónica (Producción)</option>
+<option value="Rafa">Rafa (Producción)</option>
+<option value="Isabel">Isabel (Facturación)</option>
+<option value="Diego">Diego (Facturación)</option>
+</select>
+</div>
+<div class="modal-actions">
+<button class="btn-primary" id="login-enter"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
+</div>
+<div class="modal-hint">*Modo local (sin contraseñas). Se guarda en este navegador.</div>
+</div>
+</div>
+<main id="main-content">
+<div class="view-section active" id="view-dashboard">
+<section class="live-activity-panel">
+<div class="kpi-row-compact">
+<div class="filters-left">
+<div class="f-group"><label>SECCIÓN</label><select id="f-serie"><option value="all">Todas</option><option>Nacional</option><option>Export</option><option>Hoteles</option><option>Caramelos</option></select></div>
+<div class="f-group"><label>COMERCIAL</label><select id="f-agent"><option>Todos</option><option>Alejandro</option><option>Juana</option><option>Sergio</option><option>Jorge</option><option>Pilar</option></select></div>
+<div class="f-group search">
+<label>BUSCADOR</label>
+<div class="search-box">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input id="global-search" onkeyup="filterGlobal()" placeholder="Cliente, NIF..." type="text"/>
+<i class="fa-solid fa-microphone mic-icon" onclick="startVoiceSearch()" title="Dictar"></i>
+</div>
+</div>
+</div>
+<div class="metrics-right-balloons">
+<div class="balloon purple"><span class="lbl">RFQs</span><span class="val" id="kpi-rfq-count">0</span></div>
+<div class="balloon gold"><span class="lbl">Nº OFERTAS</span><span class="val" id="kpi-off-count">0</span></div>
+<div class="balloon gold-dark"><span class="lbl">IMP. OFERTAS</span><span class="val money" id="kpi-off-amount">0 €</span></div>
+<div class="balloon blue"><span class="lbl">Nº PEDIDOS</span><span class="val" id="kpi-ord-count">0</span></div>
+<div class="balloon green"><span class="lbl">IMP. PEDIDOS</span><span class="val money" id="kpi-ord-amount">0 €</span></div>
+</div>
+</div>
+</section>
+<section class="dashboard-grid">
+<div class="dashboard-col">
+<div class="col-header"><h3>RFQs (Entrada Email)</h3><span class="badge">Activo</span></div>
+<div class="col-list-content" id="list-rfqs"></div>
+</div>
+<div class="dashboard-col">
+<div class="col-header"><h3>Ofertas (ERP)</h3><span class="badge" id="mini-off">0 €</span></div>
+<div class="col-list-content" id="list-offers">
+<div class="empty-upload-zone" onclick="document.getElementById('file-offers').click()"><i class="fa-solid fa-cloud-arrow-up"></i><p>Subir <strong>OFERTAS.csv</strong></p></div>
+<input accept=".csv" hidden="" id="file-offers" type="file"/>
+</div>
+</div>
+<div class="dashboard-col">
+<div class="col-header"><h3>Pedidos (ERP)</h3><span class="badge" id="mini-ord">0 €</span></div>
+<div class="col-list-content" id="list-orders">
+<div class="empty-upload-zone" onclick="document.getElementById('file-orders').click()"><i class="fa-solid fa-cloud-arrow-up"></i><p>Subir <strong>PEDIDOS.csv</strong></p></div>
+<input accept=".csv" hidden="" id="file-orders" type="file"/>
+</div>
+</div>
+</section>
+</div>
+<div class="view-section hidden" id="view-analytics">
+<div class="section-header">
+<h2>Analítica de Negocio</h2>
+<!-- (v103) Botón "Volver" eliminado: ya existe navegación por menú superior/lateral -->
+</div>
+<!-- Toggle Pedidos / Ofertas (misma Analítica, dos modos) -->
+<div aria-label="Modo analítica" class="an2-toggle" role="tablist">
+<button class="an2-tab active" id="an2-tab-orders" type="button">Pedidos</button>
+<button class="an2-tab" id="an2-tab-offers" type="button">Ofertas</button>
+</div>
+<div class="an2-topbar">
+<div class="an2-controls">
+<div class="an2-ctrl">
+<label id="an2-year-label">AÑO PEDIDOS</label>
+<select id="an2-year" title="Año (si el archivo no lo incluye o no se detecta)">
+<option value="2018">2018</option>
+<option value="2019">2019</option>
+<option value="2020">2020</option>
+<option value="2021">2021</option>
+<option value="2022">2022</option>
+<option value="2023">2023</option>
+<option value="2024">2024</option>
+<option selected="" value="2025">2025</option>
+<option value="2026">2026</option>
+</select>
+</div>
+<button class="btn-primary-blue" id="an2-add-year" style="height:40px" title="Añadir año (2019, 2020, ...)"><i class="fa-solid fa-plus"></i> Añadir año</button>
+<button class="btn-primary-blue" id="an2-upload-btn"><i class="fa-solid fa-cloud-arrow-up"></i> Subir PEDIDOS (año)</button>
+<input accept=".xlsx,.csv" hidden="" id="an2-file" multiple="" type="file"/>
+<button class="btn-primary-blue" id="an2-clear" title="Borrar años cargados"><i class="fa-solid fa-trash"></i> Borrar años</button>
+<div class="an2-export">
+<div class="an2-ctrl">
+<label>DESDE</label>
+<input id="an2-from" type="date">
+</input></div>
+<div class="an2-ctrl">
+<label>HASTA</label>
+<input id="an2-to" type="date">
+</input></div>
+<div class="an2-ctrl" style="max-width:150px">
+<label>MIN €</label>
+<input id="an2-min" min="0" step="100" type="number" value="3000">
+</input></div>
+<div class="an2-sec-pills" title="Filtra el export por sección">
+<label class="pill"><input checked="" id="an2-sec-nacional" type="checkbox"/> Nacional</label>
+<label class="pill"><input checked="" id="an2-sec-hoteles" type="checkbox"/> Hoteles</label>
+<label class="pill"><input checked="" id="an2-sec-export" type="checkbox"/> Export</label>
+<label class="pill"><input checked="" id="an2-sec-caramelos" type="checkbox"/> Caramelos</label>
+</div>
+<button class="btn-primary-blue" id="an2-export-btn" title="Exportar clientes por encima del mínimo (rango de fechas)"><i class="fa-solid fa-file-export"></i> Exportar &gt; MIN</button>
+</div>
+<div class="an2-status" id="an2-status">Sin datos. Sube pedidos por año (xlsx/csv) → se comparan automáticamente.</div>
+</div>
+</div>
+<div class="an2-kpis" id="an2-kpis"></div>
+<div class="an2-grid">
+<div class="an2-card span-2">
+<div class="an2-head">
+<h3>Pedidos por Mes · Comparativa por Año</h3>
+<div class="an2-sub">Azul 2024 · Verde 2025 · Naranja 2026 · Solo COMTETADO · totalIVA &gt; 0</div>
+</div>
+<div class="an2-chart"><canvas id="an2-monthly"></canvas></div>
+</div>
+<div class="an2-card">
+<div class="an2-head">
+<h3>Pedidos por Año · Importe y Nº pedidos</h3>
+<div class="an2-sub">Barras = Importe · Línea = Nº pedidos</div>
+</div>
+<div class="an2-chart"><canvas id="an2-yearly"></canvas></div>
+</div>
+<div class="an2-card">
+<div class="an2-head">
+<h3>Ventas por Series · Comparativa por Año</h3>
+<div class="an2-sub">EXPORT = EA · NACIONAL = FV/FN · resto = HOTELES</div>
+</div>
+<div class="an2-chart"><canvas id="an2-series"></canvas></div>
+</div>
+<div class="an2-card span-2">
+<div class="an2-head">
+<h3>Top Clientes · Comparativa</h3>
+<div class="an2-sub">Top 10 (acumulado en los años cargados). Se ve la aportación por año.</div>
+</div>
+<div class="an2-chart tall"><canvas id="an2-top"></canvas></div>
+</div>
+</div>
+</div>
+<div class="view-section hidden" id="view-objetivos">
+<div class="section-header"><h2>Objetivos 2026 vs Desglose Real</h2></div>
+<div class="obj-summary-row">
+<div class="obj-serie-card">
+<div class="obj-head"><h4>NACIONAL</h4><button class="btn-mini-up" onclick="triggerObjUpload('nac')">Subir Desglose</button></div>
+<div class="obj-val">Obj: <span class="text-amber" id="obj-nac">2.160.000€</span> | Real: <span class="text-blue" id="val-nac">0€</span></div>
+<div class="mini-chart-wrap"><canvas id="c-mini-nac"></canvas></div>
+<input hidden="" id="file-obj-nac" onchange="loadObjectiveCSV(this, 'nac', 'promocion')" type="file"/>
+</div>
+<div class="obj-serie-card">
+<div class="obj-head"><h4>EXPORT</h4><button class="btn-mini-up" onclick="triggerObjUpload('exp')">Subir Desglose</button></div>
+<div class="obj-val">Obj: <span class="text-amber" id="obj-exp">400.000€</span> | Real: <span class="text-blue" id="val-exp">0€</span></div>
+<div class="mini-chart-wrap"><canvas id="c-mini-exp"></canvas></div>
+<input hidden="" id="file-obj-exp" onchange="loadObjectiveCSV(this, 'exp', '')" type="file"/>
+</div>
+<div class="obj-serie-card">
+<div class="obj-head"><h4>HOTELES</h4><button class="btn-mini-up" onclick="triggerObjUpload('hot')">Subir Desglose</button></div>
+<div class="obj-val">Obj: 300k€ | Real: <span class="text-blue" id="val-hot">0€</span></div>
+<div class="mini-chart-wrap"><canvas id="c-mini-hot"></canvas></div>
+<input hidden="" id="file-obj-hot" onchange="loadObjectiveCSV(this, 'hot', 'hotel')" type="file"/>
+</div>
+<div class="obj-serie-card">
+<div class="obj-head"><h4>CARAMELOS</h4><button class="btn-mini-up" onclick="triggerObjUpload('car')">Subir Desglose</button></div>
+<div class="obj-val">Obj: 92k€ | Real: <span class="text-blue" id="val-car">0€</span></div>
+<div class="mini-chart-wrap"><canvas id="c-mini-car"></canvas></div>
+<input hidden="" id="file-obj-car" onchange="loadObjectiveCSV(this, 'car', 'caram')" type="file"/>
+</div>
+</div>
+<div class="objectives-white-card strategic-top">
+<div class="white-card-content" strategic-card="">
+<div class="strategic-head">
+<h3><i class="fa-solid fa-rocket"></i> Panel Estratégico</h3>
+<button class="btn-mega-action" onclick="window.location.href='objetivos.html'">
+                                ABRIR HERRAMIENTA PRO <i class="fa-solid fa-arrow-right"></i>
+</button>
+</div>
+<div class="wc-stats">
+<div class="wc-item"><span>OBJETIVO GLOBAL</span><strong id="sp-obj-global">0 €</strong></div>
+<div class="wc-item"><span>REAL LEÍDO</span><strong id="sp-real-global">0 €</strong></div>
+<div class="wc-item"><span>GAP</span><strong class="text-danger" id="sp-gap-global">0 €</strong></div>
+</div>
+<div class="strategic-series">
+<div class="ss-item"><span>NACIONAL</span><strong id="sp-obj-nac">0 €</strong></div>
+<div class="ss-item"><span>EXPORT</span><strong id="sp-obj-exp">0 €</strong></div>
+<div class="ss-item"><span>HOTELES</span><strong id="sp-obj-hot">0 €</strong></div>
+<div class="ss-item"><span>CARAMELOS</span><strong id="sp-obj-car">0 €</strong></div>
+</div>
+<div class="strategic-hint">Resumen automático desde CSV de Objetivos (NAC/EXP/HOT/CAR).</div>
+</div>
+</div>
+<div class="obj-charts-center">
+<div class="obj-charts-grid">
+<div class="obj-chart-card">
+<div class="obj-chart-head">
+<h4>NACIONAL · Objetivo vs Real por Mes</h4>
+<span class="hint">CARM = Promoción + Caramelos</span>
+</div>
+<div class="obj-chart-wrap"><canvas id="c-nac-mes"></canvas></div>
+</div>
+<div class="obj-chart-card">
+<div class="obj-chart-head">
+<h4>EXPORT · Objetivo vs Real por Mes</h4>
+</div>
+<div class="obj-chart-wrap"><canvas id="c-exp-mes"></canvas></div>
+</div>
+<div class="obj-chart-card">
+<div class="obj-chart-head">
+<h4>HOTELES · Objetivo vs Real por Mes</h4>
+</div>
+<div class="obj-chart-wrap"><canvas id="c-hot-mes"></canvas></div>
+</div>
+<div class="obj-chart-card">
+<div class="obj-chart-head">
+<h4>CARAMELOS · Objetivo vs Real por Mes</h4>
+</div>
+<div class="obj-chart-wrap"><canvas id="c-car-mes"></canvas></div>
+</div>
+<div class="obj-chart-card">
+<div class="obj-chart-head">
+<h4>NACIONAL · Objetivo vs Real por Cuatrimestre</h4>
+</div>
+<div class="obj-chart-wrap"><canvas id="c-nac-cuatr"></canvas></div>
+</div>
+<div class="obj-chart-card">
+<div class="obj-chart-head">
+<h4>EXPORT · Objetivo vs Real por Cuatrimestre</h4>
+</div>
+<div class="obj-chart-wrap"><canvas id="c-exp-cuatr"></canvas></div>
+</div>
+<div class="obj-chart-card">
+<div class="obj-chart-head">
+<h4>HOTELES · Objetivo vs Real por Cuatrimestre</h4>
+</div>
+<div class="obj-chart-wrap"><canvas id="c-hot-cuatr"></canvas></div>
+</div>
+<div class="obj-chart-card">
+<div class="obj-chart-head">
+<h4>CARAMELOS · Objetivo vs Real por Cuatrimestre</h4>
+</div>
+<div class="obj-chart-wrap"><canvas id="c-car-cuatr"></canvas></div>
+</div>
+</div>
+</div>
+<button class="btn-mega-action" onclick="window.location.href='objetivos.html'">ABRIR HERRAMIENTA PRO <i class="fa-solid fa-arrow-right"></i></button>
+</div>
+<div class="view-section hidden facturacion-view" id="view-facturacion">
+<div class="view-top-anchor" id="anchor-facturacion"></div>
+<div class="section-header facturacion-header">
+<div class="facturacion-title">
+<h2>Facturas pendientes de cobro</h2>
+<div class="facturacion-sub">Carga tu Excel y filtra por cliente, factura, año, serie y comercial. Marca reclamadas y fija fecha aproximada de pago.</div>
+</div>
+<div class="facturacion-actions">
+<button class="btn-secondary" id="btn-fact-fullscreen" type="button"><i class="fa-solid fa-expand"></i> Pantalla completa</button>
+<button class="btn-primary-blue" onclick="document.getElementById('file-bill').click()" type="button"><i class="fa-solid fa-file-invoice-dollar"></i> Cargar Excel/CSV</button>
+<input accept=".csv,.xlsx,.xls,.xlsm" hidden="" id="file-bill" type="file">
+</input></div>
+</div>
+<div class="facturacion-toolbar">
+<div class="input-group">
+<label>Buscador</label>
+<input id="bill-search" placeholder="Factura, cliente, descripción…" type="text">
+</input></div>
+<div class="input-group">
+<label>Serie</label>
+<select id="bill-serie">
+<option value="">Todas</option>
+<option value="Nacional">Nacional (FN)</option>
+<option value="Export">Export (EA)</option>
+<option value="Hoteles">Hoteles (FH/FM/NH/H1…)</option>
+</select>
+</div>
+<div class="input-group">
+<label>Año</label>
+<select id="bill-year">
+<option value="">Todos</option>
+</select>
+</div>
+<div class="input-group">
+<label>Comercial</label>
+<select id="bill-sales">
+<option value="">Todos</option>
+<option value="Alejandro Exportación">Alejandro Exportación</option>
+<option value="Alejandro Nacional">Alejandro Nacional</option>
+<option value="Jorge Díaz">Jorge Díaz</option>
+<option value="Pilar Martín">Pilar Martín</option>
+<option value="Nelly Sevilla">Nelly Sevilla</option>
+<option value="Juana Romero">Juana Romero</option>
+<option value="Juan Manuel Riego">Juan Manuel Riego</option>
+<option value="Supervisor">Supervisor</option>
+</select>
+</div>
+<div class="bill-chips">
+<label class="chip">
+<input checked="" id="bill-only-pending" type="checkbox"/>
+<span>Pendiente de pago</span>
+</label>
+<label class="chip">
+<input id="bill-only-reclaimed" type="checkbox"/>
+<span>Reclamada</span>
+</label>
+</div>
+</div>
+<div class="facturacion-kpis">
+<div class="kpi-card">
+<div class="kpi-label">Facturas pendientes (filtrado)</div>
+<div class="kpi-value" id="bill-kpi-count">0</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-label">Importe pendiente (filtrado)</div>
+<div class="kpi-value" id="bill-kpi-amount">0 €</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-label">Reclamadas (filtrado)</div>
+<div class="kpi-value" id="bill-kpi-reclaimed">0</div>
+</div>
+</div>
+<div class="facturacion-grid">
+<div class="facturacion-panel">
+<div class="panel-title">Pendientes por comercial</div>
+<canvas height="120" id="bill-chart"></canvas>
+</div>
+<div class="facturacion-panel">
+<div class="panel-title">Resumen por comercial</div>
+<div class="bill-summary" id="bill-summary"></div>
+</div>
+</div>
+<div class="facturacion-table-wrap">
+<table class="billing-table billing-table-pro">
+<thead>
+<tr>
+<th></th>
+<th>Factura</th>
+<th>Cliente</th>
+<th>Año</th>
+<th>Serie</th>
+<th>Comercial</th>
+<th>Emisión</th>
+<th>Vencimiento</th>
+<th>Importe Pdte</th>
+<th>Reclamada</th>
+<th>Pago aprox.</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody id="tbody-billing"></tbody>
+</table>
+</div>
+</div><div class="view-section hidden" id="view-produccion">
+<div class="view-top-anchor" id="anchor-produccion"></div>
+<div class="section-header"><h2>Gantt Interactivo</h2><span>Arrastra barras y gestiona notas. Alarma activa 🔔.</span></div>
+
+<div class="prod-toolbar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 12px">
+  <label class="btn-primary-blue" style="display:inline-flex;gap:8px;align-items:center;cursor:pointer">
+    <i class="fa-solid fa-cloud-arrow-up"></i> Cargar PEDIDOS 2026 (CSV)
+    <input id="prod-file" type="file" accept=".csv,text/csv" style="display:none">
+  </label>
+  <input id="prod-search" class="input" placeholder="Buscar: pedido, cliente, descripción, agente, serie…" style="min-width:260px;flex:1">
+  <select id="prod-serie" class="input" style="min-width:140px"><option value="">Serie (todas)</option></select>
+  <select id="prod-agente" class="input" style="min-width:180px"><option value="">Agente (todos)</option></select>
+  <select id="prod-sociedad" class="input" style="min-width:220px"><option value="">Sociedad (todas)</option></select>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="prod-st-pend" checked> Pendiente</label>
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="prod-st-proc" checked> En proceso</label>
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="prod-st-inc" checked> Incidencia/demora</label>
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="prod-st-fin" checked> Finalizado</label>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:12px;align-items:center;opacity:.8">
+    <span>Mostrando: <strong id="prod-kpi-count">0</strong></span>
+    <span>Incidencias: <strong id="prod-kpi-inc">0</strong></span>
+  </div>
+</div>
+
+<div class="gantt-wrapper">
+<div class="gantt-timeline-header"><div>Ene</div><div>Feb</div><div>Mar</div><div>Abr</div><div>May</div><div>Jun</div><div>Jul</div><div>Ago</div><div>Sep</div><div>Oct</div><div>Nov</div><div>Dic</div></div>
+<div class="gantt-container" id="gantt-container"></div>
+</div>
+</div><div class="view-section hidden" id="view-informes">
+<div class="view-top-anchor" id="anchor-informes"></div>
+<div class="section-header">
+  <h2>Informes</h2>
+  <div class="section-sub">Sube informes semanales y emite reportes por semana, mes, serie y agente.</div>
+</div>
+
+<div class="inf-top">
+  <div class="inf-card">
+    <div class="inf-card-head">
+      <div>
+        <h3>Subir informe semanal</h3>
+        <div class="muted">Formatos: .xls / .xlsx / .csv</div>
+      </div>
+      <button class="btn-primary-blue" id="inf-upload-btn"><i class="fa-solid fa-cloud-arrow-up"></i> Subir</button>
+      <input accept=".xls,.xlsx,.csv" hidden id="inf-file" multiple type="file"/>
+    </div>
+    <div class="inf-status" id="inf-status">Sin informes cargados todavía.</div>
+  </div>
+
+  <div class="inf-card">
+    <div class="inf-card-head">
+      <div>
+        <h3>Emitir informe</h3>
+        <div class="muted">Filtra y descarga el informe en CSV.</div>
+      </div>
+      <div class="inf-actions">
+        <button class="btn-back-black" id="inf-clear"><i class="fa-solid fa-trash"></i> Reset</button>
+        <button class="btn-primary-blue" id="inf-download"><i class="fa-solid fa-file-export"></i> Descargar</button>
+      </div>
+    </div>
+
+    <div class="inf-filters">
+      <div class="inf-ctrl">
+        <label>Agente</label>
+        <select id="inf-agent">
+          <option value="all">Todos</option>
+          <option>Juana</option>
+          <option>Sergio</option>
+          <option>Alejandro</option>
+          <option>Export</option>
+          <option>Jorge</option>
+          <option>Pilar</option>
+        </select>
+      </div>
+
+      <div class="inf-ctrl">
+        <label>Serie</label>
+        <select id="inf-serie">
+          <option value="all">Todas</option>
+          <option value="NACIONAL">NACIONAL</option>
+          <option value="EXPORT">EXPORT</option>
+        </select>
+      </div>
+
+      <div class="inf-ctrl">
+        <label>Periodo</label>
+        <select id="inf-period">
+          <option value="week">Semana</option>
+          <option value="month">Mes</option>
+        </select>
+      </div>
+
+      <div class="inf-ctrl" id="inf-week-wrap">
+        <label>Semana</label>
+        <input id="inf-week" type="week"/>
+      </div>
+
+      <div class="inf-ctrl hidden" id="inf-month-wrap">
+        <label>Mes</label>
+        <input id="inf-month" type="month"/>
+      </div>
+
+      <div class="inf-ctrl">
+        <label>Buscar</label>
+        <input id="inf-search" placeholder="Cliente, pedido, observación..." type="text"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="inf-charts">
+  <div class="an2-card">
+    <div class="an2-head">
+      <h3>Importe semanal por agente</h3>
+      <div class="an2-sub">Suma de la semana seleccionada (o última semana cargada).</div>
+    </div>
+    <div class="an2-chart" style="height:260px"><canvas id="inf-weekly-chart"></canvas></div>
+  </div>
+
+  <div class="an2-card">
+    <div class="an2-head">
+      <h3>Importe mensual por agente</h3>
+      <div class="an2-sub">Suma del mes seleccionado (o último mes cargado).</div>
+    </div>
+    <div class="an2-chart" style="height:260px"><canvas id="inf-monthly-chart"></canvas></div>
+  </div>
+</div>
+
+<div class="inf-card" style="margin-top:14px">
+  <div class="inf-card-head">
+    <div>
+      <h3>Detalle del informe</h3>
+      <div class="muted" id="inf-detail-sub">Filtra arriba para ver el detalle.</div>
+    </div>
+  </div>
+  <div class="table-wrapper" style="height:420px">
+    <table class="table" id="inf-table">
+      <thead><tr>
+        <th>Periodo</th><th>Serie</th><th>Agente</th><th>Cliente</th><th>Pedido</th><th>Descripción</th><th style="text-align:right">Importe</th>
+      </tr></thead>
+      <tbody id="inf-tbody"></tbody>
+    </table>
+  </div>
+</div>
+</div><div class="view-section hidden" id="view-table">
+<div class="view-top-anchor" id="anchor-table"></div>
+<div class="section-header"><h2 id="table-title">Registros Detallados</h2><button class="btn-back-black" onclick="nav('dashboard')">Volver</button></div>
+
+<!-- Controles dinámicos para Listas (RFQs/Ofertas/Pedidos) -->
+<div id="table-controls" style="margin:10px 0 14px;display:none"></div>
+<div id="table-summary" style="display:none;margin:0 0 12px"></div>
+<div class="table-wrapper" style="height: calc(100vh - 150px);"><table id="full-table"><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div>
+</div></main></div>
+
+
+
+
+
+
+
+<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModal()">
+<div class="modal-content" onclick="event.stopPropagation()">
+<div class="modal-header"><h3>Ficha de Detalle</h3><button onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="modal-body" id="modal-body"></div>
+<div class="modal-footer"><button class="btn-primary-blue" onclick="alert('Conectando a ERP')">Comunicar con ERP</button></div>
+</div>
+</div>
+<!-- Modal PRO para notas de Producción (blur) -->
+<div class="modal-overlay hidden" id="gantt-modal-overlay" onclick="closeGanttModal()">
+<div class="modal-content" onclick="event.stopPropagation()" style="max-width:760px">
+<div class="modal-header"><h3 id="gantt-modal-title">Notas de producción</h3><button onclick="closeGanttModal()"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
+<textarea id="gantt-notes-text" rows="8" style="width:100%;resize:vertical"></textarea>
+<div style="display:flex;justify-content:flex-end;gap:10px">
+<button class="btn-back-black" onclick="closeGanttModal()">Cancelar</button>
+<button class="btn-primary-blue" onclick="saveGanttNotes()">Guardar</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Toast PRO (avisos) -->
+<div class="toast hidden" id="gantt-toast"></div>
+<script src="./app.js?v=152"></script>
+</body>
+</html>

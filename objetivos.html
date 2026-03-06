@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Estratégico · PRO v80.2_fixed_final</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="objetivos.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="tool-container">
+
+  <nav class="tool-sidebar">
+    <div class="ts-logo">
+      <i class="fa-solid fa-layer-group"></i>
+      <span>PANEL ESTRATÉGICO</span>
+    </div>
+
+    <div class="ts-menu">
+      <button class="ts-link active" onclick="showTab('tab-dash', event)"><i class="fa-solid fa-chart-pie"></i> General</button>
+      <button class="ts-link" onclick="showTab('tab-smart', event)"><i class="fa-solid fa-bullseye"></i> SMART</button>
+      <button class="ts-link" onclick="showTab('tab-dafo', event)"><i class="fa-solid fa-chess-board"></i> DAFO</button>
+      <button class="ts-link" onclick="showTab('tab-scrap', event)"><i class="fa-solid fa-robot"></i> Scrapping</button>
+    </div>
+
+    <div class="ts-bottom">
+      <button class="btn-back-home" onclick="window.location.href='index.html'">Volver al ERP</button>
+    </div>
+  </nav>
+
+  <main class="tool-main">
+    <header class="tool-header">
+      <div class="tool-header-left">
+        <button class="btn-back-top" onclick="window.location.href='index.html'">
+          <i class="fa-solid fa-arrow-left"></i> Volver al panel
+        </button>
+        <h2>Estrategia Corporativa 2026</h2>
+      </div>
+      <div class="live-pill" id="live-pill">En vivo: esperando datos…</div>
+    </header>
+
+    <!-- TAB GENERAL -->
+    <section id="tab-dash" class="tab-content active">
+
+      <div class="kpi-topbar">
+        <div class="kpi-grid kpi-grid-4">
+          <div class="kpi-card"><span>OBJETIVO</span><strong id="kpi-obj">0 €</strong></div>
+          <div class="kpi-card"><span>REAL ERP</span><strong id="kpi-real">0 €</strong></div>
+          <div class="kpi-card"><span>PREVISIÓN</span><strong id="kpi-fore">0 €</strong></div>
+          <div class="kpi-card"><span>GAP</span><strong id="kpi-gap" class="text-danger">0 €</strong></div>
+        </div>
+
+        <div class="kpi-right">
+          <div class="ctrl">
+            <label class="tool-label">Serie</label>
+            <select id="sel-serie" class="tool-select">
+              <option value="nac">Nacional</option>
+              <option value="exp">Export</option>
+              <option value="hot">Hoteles</option>
+              <option value="car">Caramelos</option>
+            </select>
+          </div>
+          <button id="btn-sync" class="tool-btn"><i class="fa-solid fa-rotate"></i> Sincronizar</button>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-title">Objetivo vs Real por Mes</div>
+          <canvas id="c-mes"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Objetivo vs Real por Cuatrimestre</div>
+          <canvas id="c-cuatr"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Evolución (Histórico vs Previsión)</div>
+          <canvas id="c-hist"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Objetivo vs Real vs Previsión</div>
+          <canvas id="c-mix"></canvas>
+        </div>
+      </div>
+
+      <div class="inputs-wrap">
+        <div class="inputs-head">
+          <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Inputs & Acciones (por serie)</h3>
+          <div class="inputs-sub">Editable: escribe tus objetivos y acciones. Se guarda automáticamente por serie.</div>
+        </div>
+
+        <div class="inputs-grid">
+          <div class="input-card">
+            <div class="ic-title">Nuevo negocio</div>
+            <div class="ic-row">
+              <div class="ic-field"><label>Objetivo (€)</label><input id="in-newbiz-t" type="number" step="100" placeholder="0"></div>
+              <div class="ic-field"><label>Actual (€)</label><input id="in-newbiz-a" type="number" step="100" placeholder="0"></div>
+            </div>
+          </div>
+
+          <div class="input-card">
+            <div class="ic-title">Nuevos clientes</div>
+            <div class="ic-row">
+              <div class="ic-field"><label>Objetivo (nº)</label><input id="in-newcli-t" type="number" step="1" placeholder="0"></div>
+              <div class="ic-field"><label>Actual (nº)</label><input id="in-newcli-a" type="number" step="1" placeholder="0"></div>
+            </div>
+          </div>
+
+          <div class="input-card">
+            <div class="ic-title">Clientes dormidos</div>
+            <div class="ic-row">
+              <div class="ic-field"><label>Objetivo (reactiv.)</label><input id="in-dorm-t" type="number" step="1" placeholder="0"></div>
+              <div class="ic-field"><label>Actual</label><input id="in-dorm-a" type="number" step="1" placeholder="0"></div>
+            </div>
+          </div>
+
+          <div class="input-card">
+            <div class="ic-title">Ferias / Acciones</div>
+            <div class="ic-row">
+              <div class="ic-field"><label>Ferias (nº)</label><input id="in-fair-t" type="number" step="1" placeholder="0"></div>
+              <div class="ic-field"><label>Acciones (nº)</label><input id="in-act-t" type="number" step="1" placeholder="0"></div>
+            </div>
+          </div>
+
+          <div class="input-card wide">
+            <div class="ic-title">Oportunidades y acciones correctoras</div>
+            <textarea id="in-notes" class="ic-notes" placeholder="Ej: recuperar cliente X, campaña Y, feria Z, upsell en HORECA…"></textarea>
+          </div>
+
+          <div class="input-card wide">
+            <div class="ic-title">Impacto esperado (estimación)</div>
+            <div class="ic-row">
+              <div class="ic-field"><label>Impacto €</label><input id="in-impact-eur" type="number" step="100" placeholder="0"></div>
+              <div class="ic-field"><label>Plazo</label><input id="in-impact-time" type="text" placeholder="Q2 / 60 días / etc."></div>
+            </div>
+          </div>
+
+          <div class="input-card chart">
+            <div class="ic-title">Plan vs Actual (inputs)</div>
+            <canvas id="c-inputs"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB SMART -->
+    <section id="tab-smart" class="tab-content">
+      <div class="smart-wrap">
+        <div class="smart-title">
+          <h3>SMART (editable, por serie)</h3>
+          <div class="smart-sub">Define objetivo, medición y plazos. Se guarda automáticamente al escribir.</div>
+        </div>
+
+        <div class="smart-cards">
+          <div class="smart-card">
+            <div class="smart-badge s">S</div>
+            <div class="smart-body">
+              <div class="smart-h">Específico</div>
+              <div class="smart-q">¿Qué vamos a conseguir y para quién?</div>
+              <textarea id="smart-s"></textarea>
+            </div>
+          </div>
+
+          <div class="smart-card">
+            <div class="smart-badge m">M</div>
+            <div class="smart-body">
+              <div class="smart-h">Medible</div>
+              <div class="smart-q">¿Qué KPI y con qué fuente?</div>
+              <textarea id="smart-m"></textarea>
+            </div>
+          </div>
+
+          <div class="smart-card">
+            <div class="smart-badge a">A</div>
+            <div class="smart-body">
+              <div class="smart-h">Alcanzable</div>
+              <div class="smart-q">¿Qué recursos y plan de acción?</div>
+              <textarea id="smart-a"></textarea>
+            </div>
+          </div>
+
+          <div class="smart-card">
+            <div class="smart-badge r">R</div>
+            <div class="smart-body">
+              <div class="smart-h">Relevante</div>
+              <div class="smart-q">¿Por qué impacta en el negocio?</div>
+              <textarea id="smart-r"></textarea>
+            </div>
+          </div>
+
+          <div class="smart-card">
+            <div class="smart-badge t">T</div>
+            <div class="smart-body">
+              <div class="smart-h">Temporal</div>
+              <div class="smart-q">Fechas, hitos y checkpoints</div>
+              <textarea id="smart-t"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="smart-extra">
+          <div class="se-card">
+            <div class="se-h">Fórmula / Nota</div>
+            <textarea id="smart-formula" placeholder="Ej: (Ventas n+1 - Ventas n) / Ventas n"></textarea>
+          </div>
+          <div class="se-card">
+            <div class="se-h">Hitos / Indicadores</div>
+            <textarea id="smart-milestones" placeholder="Ej: Q1 pipeline, Q2 cierre 3 cuentas, Q3 expansión…"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB DAFO -->
+    <section id="tab-dafo" class="tab-content">
+      <div class="dafo-grid">
+        <div class="dafo-box pos">
+          <h4>Fortalezas</h4>
+          <ul id="dafo-f" contenteditable="true"></ul>
+        </div>
+        <div class="dafo-box pos">
+          <h4>Oportunidades</h4>
+          <ul id="dafo-o" contenteditable="true"></ul>
+        </div>
+        <div class="dafo-box neg">
+          <h4>Debilidades</h4>
+          <ul id="dafo-d" contenteditable="true"></ul>
+        </div>
+        <div class="dafo-box neg">
+          <h4>Amenazas</h4>
+          <ul id="dafo-a" contenteditable="true"></ul>
+        </div>
+      </div>
+      <div class="dafo-hint">Tip: usa viñetas. Se guarda automáticamente por serie.</div>
+    </section>
+
+    <!-- TAB SCRAP -->
+    <section id="tab-scrap" class="tab-content">
+      <div class="dafo-grid">
+        <div class="dafo-box pos">
+          <h4>Productos</h4>
+          <div id="scrap-p" class="tag-cloud"></div>
+        </div>
+        <div class="dafo-box neg">
+          <h4>Precios</h4>
+          <div id="scrap-v" class="tag-cloud"></div>
+        </div>
+      </div>
+      <button onclick="runScrape()" class="btn-primary-blue" style="margin-top:20px">Analizar mercado</button>
+      <div class="dafo-hint">Scrapping avanzado lo iteramos luego.</div>
+    </section>
+
+  </main>
+</div>
+
+<script src="objetivos.js"></script>
+</body>
+</html>
