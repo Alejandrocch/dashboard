@@ -6,6 +6,27 @@ let STATE = {
 };
 let charts = {};
 
+// Utilidades de rendimiento (evita bloqueos al escribir en filtros)
+function debounce(fn, wait = 120){
+  let t = null;
+  return function(...args){
+    if(t) clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+function rafThrottle(fn){
+  let queued = false;
+  return function(...args){
+    if(queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      fn.apply(this, args);
+    });
+  };
+}
+
 // Plantilla de estado para evitar versiones corruptas (import JSON / server)
 const DEFAULT_STATE = JSON.parse(JSON.stringify(STATE));
 function normalizeState(s){
@@ -702,8 +723,9 @@ if (menuImportServer) menuImportServer.onclick = () => {
     // Filtros del dashboard (Sección / Comercial)
     const fSerie = document.getElementById('f-serie');
     const fAgent = document.getElementById('f-agent');
-    if(fSerie) fSerie.addEventListener('change', () => { window.__CCH_FILTER_SERIE = String(fSerie.value||'all'); updateUI(); });
-    if(fAgent) fAgent.addEventListener('change', () => { window.__CCH_FILTER_AGENT = String(fAgent.value||'Todos'); updateUI(); });
+    const updateUIDeferred = rafThrottle(updateUI);
+    if(fSerie) fSerie.addEventListener('change', () => { window.__CCH_FILTER_SERIE = String(fSerie.value||'all'); updateUIDeferred(); });
+    if(fAgent) fAgent.addEventListener('change', () => { window.__CCH_FILTER_AGENT = String(fAgent.value||'Todos'); updateUIDeferred(); });
 
     initGlobalSearchAndMic();
     initBillingUI();
@@ -725,10 +747,11 @@ if (menuImportServer) menuImportServer.onclick = () => {
             }
         };
     }
+    const renderGanttDeferred = debounce(() => { try{ renderGantt(); }catch(e){} }, 120);
     ['prod-search','prod-serie','prod-agente','prod-sociedad','prod-st-pend','prod-st-proc','prod-st-inc','prod-st-fin'].forEach(id => {
         const el = document.getElementById(id);
-        if(el) el.addEventListener('input', () => { try{ renderGantt(); }catch(e){} });
-        if(el) el.addEventListener('change', () => { try{ renderGantt(); }catch(e){} });
+        if(el) el.addEventListener('input', renderGanttDeferred);
+        if(el) el.addEventListener('change', renderGanttDeferred);
     });
 
     // Analítica (pedidos por año) – handlers seguros (existen aunque la vista esté oculta)
@@ -4534,13 +4557,16 @@ function initGlobalSearchAndMic(){
     const input = document.getElementById('buscador') || document.getElementById('search') || document.getElementById('global-search') || document.getElementById('search-input') || document.getElementById('q');
     if(input && !input.__cchBound){
         input.__cchBound = true;
-        input.addEventListener('input', () => {
+        const runSearch = debounce(() => {
             const q = String(input.value||'').toLowerCase().trim();
             window.__CCH_SEARCH_Q = q;
             updateUI();
             const view = location.hash.replace('#','') || '';
-            if(view.includes('rfq')||view.includes('offer')||view.includes('order')) renderTable(view);
-        });
+            if(view.includes('rfq')||view.includes('offer')||view.includes('order')){
+                requestAnimationFrame(() => renderTable(view));
+            }
+        }, 140);
+        input.addEventListener('input', runSearch);
     }
 
     // Micrófono (si existe). Nunca debe romper la app si el navegador no lo soporta.
